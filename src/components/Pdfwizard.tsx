@@ -3,10 +3,14 @@ import Hero from './Hero';
 import FileUpload from './FileUpload';
 import FeatureSelection from './FeatureSelection';
 import ProcessingSelection from './ProcessingSelection';
+import Actions from './Actions';
+import { extractTextFromPdf } from '../api';
 
 const Pdfwizard = () => {
     const [selectedFeature, setSelectedFeature] = useState('text');
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [extractedText, setExtractedText] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
     // Handle file selection
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -15,33 +19,56 @@ const Pdfwizard = () => {
         }
     };
 
+    // Handle text extraction
+    const handleExtractText = async () => {
+        if (selectedFiles.length === 0) {
+            alert('Please select a PDF file first.');
+            return;
+        }
+
+        setLoading(true);
+        const result = await extractTextFromPdf(selectedFiles[0]);
+        setLoading(false);
+
+        if (result && result.data.status === 'success') {
+            const textContent = Object.values(result.data.content).join('\n\n');
+            setExtractedText(textContent);
+        } else {
+            setExtractedText('Failed to extract text.');
+        }
+    };
+
     return (
         <div className='flex flex-col items-center justify-center min-h-screen bg-gray-100'>
             <Hero />
+
             <FileUpload
                 handleFileUpload={handleFileUpload}
                 selectedFiles={selectedFiles}
             />
 
             <FeatureSelection
-                selectedFeature='text'
+                selectedFeature={selectedFeature}
                 setSelectedFeature={setSelectedFeature}
             />
 
-            <ProcessingSelection selectedFeature={selectedFeature} />
+            <ProcessingSelection
+                selectedFeature={selectedFeature}
+                extractedText={extractedText}
+                loading={loading}
+            />
 
-            {/* Actions */}
-            <div className='mt-6 flex space-x-4'>
-                <button className='px-4 py-2 bg-green-600 text-white rounded-md'>
-                    Download
-                </button>
+            {selectedFeature === 'text' && (
                 <button
-                    className='px-4 py-2 bg-red-600 text-white rounded-md'
-                    onClick={() => setSelectedFiles([])}
+                    onClick={handleExtractText}
+                    disabled={loading}
+                    className='px-4 py-2 bg-blue-600 text-white rounded-md mt-4'
                 >
-                    Reset
+                    {loading ? 'Extracting...' : 'Extract Text'}
                 </button>
-            </div>
+            )}
+
+            <Actions setSelectedFiles={setSelectedFiles} />
         </div>
     );
 };
