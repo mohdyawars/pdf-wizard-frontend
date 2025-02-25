@@ -4,6 +4,7 @@ import FileUpload from "./FileUpload";
 import FeatureSelection from "./FeatureSelection";
 import ProcessingSelection from "./ProcessingSelection";
 import Actions from "./Actions";
+import Alert from "./Alert";
 import { extractTextFromPdf } from "../api";
 import { mergePdfs } from "../api";
 
@@ -17,6 +18,7 @@ const Pdfwizard = () => {
   const [extractedText, setExtractedText] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [mergedPdf, setMergedPdf] = useState<File | null>(null);
+  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Handle file selection
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,7 +30,7 @@ const Pdfwizard = () => {
   // Handle text extraction
   const handleExtractText = async () => {
     if (selectedFiles.length === 0) {
-      alert("Please select a PDF file first.");
+      setAlert({ message: "Please select a PDF file first.", type: "error" });
       return;
     }
 
@@ -47,7 +49,7 @@ const Pdfwizard = () => {
   // Handle merging pdf
   const handleMergePdfs = async () => {
     if (selectedFiles.length < 2) {
-      alert("Please select at least 2 PDF files to merge");
+      setAlert({ message: "Please select at least 2 PDF files to merge", type: "error" });
       return;
     }
 
@@ -81,13 +83,12 @@ const Pdfwizard = () => {
         a.click();
         document.body.removeChild(a);
 
-        alert("PDFs merged successfully!");
+        setAlert({ message: "PDFs merged successfully!", type: "success" }); // ✅ Tailwind Alert
       } else {
-        alert("Failed to merge PDFs.");
+        setAlert({ message: "Failed to merge PDFs.", type: "error" });
       }
     } catch (error) {
-      console.error("Error merging PDFs:", error);
-      alert("An error occurred while merging PDFs.");
+      setAlert({ message: "An error occurred while merging PDFs.", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -141,6 +142,7 @@ const Pdfwizard = () => {
         setExtractedText={setExtractedText}
         selectedFiles={selectedFiles}
       />
+      {alert && <Alert message={alert.message} type={alert.type} onClose={() => setAlert(null)} />}
     </div>
   );
 };
