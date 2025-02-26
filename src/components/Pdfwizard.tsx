@@ -5,7 +5,7 @@ import FeatureSelection from "./FeatureSelection";
 import ProcessingSelection from "./ProcessingSelection";
 import Actions from "./Actions";
 import Alert from "./Alert";
-import { extractTextFromPdf } from "../api";
+import { extractImagesFromPdf, extractTextFromPdf } from "../api";
 import { mergePdfs } from "../api";
 
 
@@ -16,8 +16,9 @@ const Pdfwizard = () => {
   const [selectedFeature, setSelectedFeature] = useState("text");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [extractedText, setExtractedText] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [extractedImages, setExtractedImages] = useState<string[]>([]); // ✅ Add image extraction state
   const [mergedPdf, setMergedPdf] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Handle file selection
@@ -45,6 +46,33 @@ const Pdfwizard = () => {
       setExtractedText("Failed to extract text.");
     }
   };
+
+  const handleImageExtraction = async () => {
+    if (selectedFiles.length === 0) {
+      setAlert({ message: "Please select a PDF file first.", type: "error" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await extractImagesFromPdf(selectedFiles[0]); // API call
+
+      if (result?.data?.status === "success" && Array.isArray(result?.data?.images) && result.data.images.length > 0) {
+        const imageUrls = result.data.images.map((img: { url: string }) => `${API_BASE_URL}/${img.url}`);
+        setExtractedImages(imageUrls);
+        setAlert({ message: "Images extracted successfully", type: "success" });
+      } else {
+        setExtractedImages([]);
+        setAlert({ message: "No images found in the PDF.", type: "error" });
+      }
+    } catch (error) {
+      console.error("Error extracting images:", error);
+      setAlert({ message: "An error occurred while extracting images.", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   // Handle merging pdf
   const handleMergePdfs = async () => {
@@ -111,6 +139,7 @@ const Pdfwizard = () => {
       <ProcessingSelection
         selectedFeature={selectedFeature}
         extractedText={extractedText}
+        extractedImages={extractedImages} // Pass extracted images here
         loading={loading}
       />
 
@@ -124,6 +153,16 @@ const Pdfwizard = () => {
             {loading ? "Extracting..." : "Extract Text"}
           </button>
         </>
+      )}
+
+      {selectedFeature === "images" && (
+        <button
+          onClick={handleImageExtraction}
+          disabled={loading}
+          className="px-4 py-2 bg-yellow-600 text-white rounded-md mt-4"
+        >
+          {loading ? "Extracting Images..." : "Extract Images"}
+        </button>
       )}
 
       {selectedFeature === "merge" && (
@@ -140,6 +179,8 @@ const Pdfwizard = () => {
         setSelectedFiles={setSelectedFiles}
         extractedText={extractedText}
         setExtractedText={setExtractedText}
+        extractedImages={extractedImages}
+        setExtractedImages={setExtractedImages}
         selectedFiles={selectedFiles}
       />
       {alert && <Alert message={alert.message} type={alert.type} onClose={() => setAlert(null)} />}
