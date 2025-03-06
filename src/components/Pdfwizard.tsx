@@ -16,7 +16,7 @@ const Pdfwizard = () => {
   const [selectedFeature, setSelectedFeature] = useState("text");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [extractedText, setExtractedText] = useState<string | null>(null);
-  const [extractedImages, setExtractedImages] = useState<string[]>([]); // ✅ Add image extraction state
+  const [extractedImages, setExtractedImages] = useState<string[]>([]);
   const [mergedPdf, setMergedPdf] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -85,10 +85,9 @@ const Pdfwizard = () => {
     try {
       const result = await mergePdfs(selectedFiles);
 
-      if (result && result.data) {  // ✅ Ensure API response contains the file path
-        const fileUrl = `${API_BASE_URL}${result.data}`; // ✅ Convert relative path to full URL
+      if (result && result.data) {
+        const fileUrl = `${API_BASE_URL}${result.data}`;
 
-        // ✅ Fetch the actual PDF file
         const fileResponse = await fetch(fileUrl);
         if (!fileResponse.ok) {
           throw new Error(`Failed to fetch PDF: ${fileResponse.statusText}`);
@@ -96,13 +95,10 @@ const Pdfwizard = () => {
 
         const blob = await fileResponse.blob();
 
-        // ✅ Convert Blob to File (optional, for state management)
         const file = new File([blob], "merged.pdf", { type: "application/pdf" });
 
-        // ✅ Store the merged PDF in state (if needed)
         setMergedPdf(file);
 
-        // ✅ Create a download link
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -111,7 +107,7 @@ const Pdfwizard = () => {
         a.click();
         document.body.removeChild(a);
 
-        setAlert({ message: "PDFs merged successfully!", type: "success" }); // ✅ Tailwind Alert
+        setAlert({ message: "PDFs merged successfully!", type: "success" });
       } else {
         setAlert({ message: "Failed to merge PDFs.", type: "error" });
       }
