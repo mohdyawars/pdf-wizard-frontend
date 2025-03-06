@@ -1,4 +1,5 @@
 import logo from "../assets/pdf_wiz.png";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   return (
@@ -14,17 +15,16 @@ const Navbar = () => {
           <span className="text-white text-xl font-bold">PDF Wizard</span>
         </div>
 
-        {/* Navigation Links */}
         <div className="flex space-x-6">
-          <a href="#" className="text-gray-300 hover:text-white">
+          <Link to="/" className="text-gray-300 hover:text-white">
             Home
-          </a>
-          <a href="#" className="text-gray-300 hover:text-white">
+          </Link>
+          <Link to="/about" className="text-gray-300 hover:text-white">
             About
-          </a>
-          <a href="#" className="text-gray-300 hover:text-white">
+          </Link>
+          <Link to="/contact" className="text-gray-300 hover:text-white">
             Contact
-          </a>
+          </Link>
         </div>
       </div>
     </nav>
