@@ -55,7 +55,7 @@ const Pdfwizard = () => {
 
     setLoading(true);
     try {
-      const result = await extractImagesFromPdf(selectedFiles[0]); // API call
+      const result = await extractImagesFromPdf(selectedFiles[0]);
 
       if (result?.data?.status === "success" && Array.isArray(result?.data?.images) && result.data.images.length > 0) {
         const imageUrls = result.data.images.map((img: { url: string }) => `${API_BASE_URL}/${img.url}`);
