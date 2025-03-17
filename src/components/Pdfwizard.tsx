@@ -38,6 +38,7 @@ const Pdfwizard = () => {
 
     setLoading(true);
     const result = await extractTextFromPdf(selectedFiles[0]);
+    console.log(result);
     setLoading(false);
 
     if (result && result.data.status === "success") {
