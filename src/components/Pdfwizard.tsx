@@ -86,13 +86,16 @@ const Pdfwizard = () => {
     setLoading(true);
     try {
       const result = await mergePdfs(selectedFiles);
-
-      console.log(result)
-
+    
+      console.log(result);
+    
       if (result && result.data) {
         const fileUrl = result.data.startsWith("http") ? result.data : `${API_BASE_URL}${result.data}`;
-
-        console.log(fileUrl)
+    
+        console.log("Opening file in new tab:", fileUrl);
+    
+        // Open the merged PDF in a new tab
+        window.open(fileUrl, "_blank");
 
         console.log(fileUrl)
 
@@ -124,6 +127,7 @@ const Pdfwizard = () => {
       }
     } catch (error) {
       setAlert({ message: "An error occurred while merging PDFs.", type: "error" });
+      console.error(error);
       console.log(error)
     } finally {
       setLoading(false);
