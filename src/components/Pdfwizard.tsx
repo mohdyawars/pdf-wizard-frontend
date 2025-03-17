@@ -10,6 +10,7 @@ import { mergePdfs } from "../api";
 
 
 
+// const API_BASE_URL: string = "http://43.205.239.69:80";
 const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
 
 const Pdfwizard = () => {
@@ -58,8 +59,9 @@ const Pdfwizard = () => {
       const result = await extractImagesFromPdf(selectedFiles[0]);
 
       if (result?.data?.status === "success" && Array.isArray(result?.data?.images) && result.data.images.length > 0) {
-        const imageUrls = result.data.images.map((img: { url: string }) => `${API_BASE_URL}/${img.url}`);
-        setExtractedImages(imageUrls);
+        const imageUrls = result.data.images.map((img: { url: string }) =>
+          img.url.startsWith("http") ? img.url : `${API_BASE_URL}${img.url}`
+        );        setExtractedImages(imageUrls);
         setAlert({ message: "Images extracted successfully", type: "success" });
       } else {
         setExtractedImages([]);
@@ -88,7 +90,9 @@ const Pdfwizard = () => {
       console.log(result)
 
       if (result && result.data) {
-        const fileUrl = `${API_BASE_URL}${result.data}`;
+        const fileUrl = result.data.startsWith("http") ? result.data : `${API_BASE_URL}${result.data}`;
+
+        console.log(fileUrl)
 
         console.log(fileUrl)
 
