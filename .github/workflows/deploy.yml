@@ -1,39 +1,42 @@
-name: 🚀 Deploy React Frontend to AWS EC2
+name: 🚀 Deploy Frontend to AWS EC2
 
 on:
   push:
     branches:
-      - master  # Change to your main branch name if different
+      - master  # Change this to match your default branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 📂 Checkout Repository
-      uses: actions/checkout@v4
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: ⚙️ Install Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18  # Adjust based on your project
+      - name: 🏗️ Install Node.js & Dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'  # Use the Node.js version compatible with your project
 
-    - name: 📦 Install Dependencies
-      run: npm install
+      - name: 📦 Install Dependencies
+        run: npm install
 
-    - name: 🏗️ Build Frontend
-      run: npm run build
+      - name: 🔨 Build Frontend
+        run: npm run build  # Ensure this generates the `dist/` folder
 
-    - name: 🔑 Setup SSH Key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        eval "$(ssh-agent -s)"
-        ssh-add ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      - name: 🔑 Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-    - name: 🚀 Deploy to AWS EC2
-      run: |
-        scp -r dist/* ubuntu@${{ secrets.EC2_HOST }}:/var/www/html
+      - name: 📂 Deploy Frontend to EC2
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} "sudo mkdir -p /var/www/html && sudo chown -R ubuntu:ubuntu /var/www/html && sudo chmod -R 755 /var/www/html"
+          scp -o StrictHostKeyChecking=no -r dist/* ubuntu@${{ secrets.EC2_HOST }}:/var/www/html/
+
+      - name: 🔄 Restart Web Server
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} "sudo systemctl restart nginx"
 
