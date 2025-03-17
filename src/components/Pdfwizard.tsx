@@ -20,7 +20,7 @@ const Pdfwizard = () => {
   const [extractedImages, setExtractedImages] = useState<string[]>([]);
   const [mergedPdf, setMergedPdf] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Handle file selection
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,13 +32,13 @@ const Pdfwizard = () => {
   // Handle text extraction
   const handleExtractText = async () => {
     if (selectedFiles.length === 0) {
-      setAlert({ message: "Please select a PDF file first.", type: "error" });
+      setAlert({ message: "Pleaseeeeee select a PDF file first.", type: "error" });
       return;
     }
 
     setLoading(true);
     const result = await extractTextFromPdf(selectedFiles[0]);
-    console.log(result);
+    console.log(result)
     setLoading(false);
 
     if (result && result.data.status === "success") {
@@ -86,62 +86,53 @@ const Pdfwizard = () => {
 
     setLoading(true);
     try {
-      // Add visual debug feedback
-      setAlert({ message: "Step 1: Starting merge process...", type: "info" });
-      
       const result = await mergePdfs(selectedFiles);
-      
-      setAlert({ message: "Step 2: Received merge result", type: "info" });
-      
+    
+      console.error(result);
+    
       if (result && result.data) {
         const fileUrl = result.data.startsWith("http") ? result.data : `${API_BASE_URL}${result.data}`;
-        
-        setAlert({ message: `Step 3: File URL: ${fileUrl.substring(0, 30)}...`, type: "info" });
-        
+    
+        console.error("Opening file in new tab:", fileUrl);
+    
         // Open the merged PDF in a new tab
         window.open(fileUrl, "_blank");
 
-        setAlert({ message: "Step 4: Attempting to download file...", type: "info" });
+        console.log(fileUrl)
 
-        try {
-          const fileResponse = await fetch(fileUrl);
-          setAlert({ message: `Step 5: Fetch response status: ${fileResponse.status}`, type: "info" });
-          
-          if (!fileResponse.ok) {
-            throw new Error(`Failed to fetch PDF: ${fileResponse.statusText}`);
-          }
-
-          const blob = await fileResponse.blob();
-          setAlert({ message: `Step 6: Got blob size: ${blob.size} bytes`, type: "info" });
-
-          const file = new File([blob], "merged.pdf", { type: "application/pdf" });
-          setMergedPdf(file);
-
-          const url = URL.createObjectURL(blob);
-          
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "merged.pdf"; // Add this line to force download
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          
-          // Clean up the object URL
-          URL.revokeObjectURL(url);
-
-          setAlert({ message: "PDFs merged successfully!", type: "success" });
-        } catch (fetchError) {
-          setAlert({ message: `Download error: ${(fetchError as Error).message}`, type: "error" });
+        const fileResponse = await fetch(fileUrl);
+        if (!fileResponse.ok) {
+          throw new Error(`Failed to fetch PDF: ${fileResponse.statusText}`);
         }
+
+        const blob = await fileResponse.blob();
+
+        const file = new File([blob], "merged.pdf", { type: "application/pdf" });
+
+        console.log(file)
+
+        setMergedPdf(file);
+
+        const url = URL.createObjectURL(blob);
+        console.log(url)
+        const a = document.createElement("a");
+        a.href = url;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        setAlert({ message: "PDFs merged successfully!", type: "success" });
       } else {
-        setAlert({ message: "Failed to merge PDFs: No data returned", type: "error" });
+        setAlert({ message: "Failed to merge PDFs.", type: "error" });
       }
     } catch (error) {
-      setAlert({ message: `Error: ${(error as Error).message || "Unknown error"}`, type: "error" });
+      console.error(error);
+      setAlert({ message: "An error occurred while merging PDFs.", type: "error" });
+      console.error(error);
     } finally {
       setLoading(false);
     }
-};
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-">
