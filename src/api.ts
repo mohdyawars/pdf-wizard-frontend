@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
+// const API_BASE_URL: string = "http://43.205.239.69:80";
 
 export const extractTextFromPdf = async (file: File) => {
   const formData = new FormData();
