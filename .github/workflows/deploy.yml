@@ -13,29 +13,28 @@ jobs:
       - name: 🚀 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🔑 Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+- name: 🔑 Setup SSH Key
+  run: |
+    mkdir -p ~/.ssh
+    echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+    ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+- name: 📦 Install Node.js
+  uses: actions/setup-node@v4
+  with:
+    node-version: 18 # Adjust based on your project needs
+    cache: 'npm'
 
-      - name: 📦 Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18 # Adjust based on your project needs
-          cache: 'npm'
+- name: 📥 Install Dependencies
+  run: npm install
 
-      - name: 📥 Install Dependencies
-        run: npm install
+- name: 🌐 Set up Environment Variables
+  run: echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env
 
-      - name: 🌐 Set up Environment Variables
-        run: echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env
+- name: ⚡ Build React + Vite
+  run: npm run build
 
-      - name: ⚡ Build React + Vite
-        run: npm run build
-
-      - name: 🚀 Deploy to EC2
-        run: |
-          scp -r dist/* ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html
+- name: 🚀 Deploy to EC2
+  run: |
+    scp -r dist/* ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html
 
