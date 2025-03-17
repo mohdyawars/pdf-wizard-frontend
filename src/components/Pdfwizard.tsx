@@ -116,7 +116,6 @@ const Pdfwizard = () => {
         console.log(url)
         const a = document.createElement("a");
         a.href = url;
-        a.download = "merged.pdf";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -126,6 +125,7 @@ const Pdfwizard = () => {
         setAlert({ message: "Failed to merge PDFs.", type: "error" });
       }
     } catch (error) {
+      console.error(error);
       setAlert({ message: "An error occurred while merging PDFs.", type: "error" });
       console.error(error);
     } finally {
