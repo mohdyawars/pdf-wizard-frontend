@@ -85,6 +85,8 @@ const Pdfwizard = () => {
     try {
       const result = await mergePdfs(selectedFiles);
 
+      console.log(result)
+
       if (result && result.data) {
         const fileUrl = `${API_BASE_URL}${result.data}`;
 
@@ -97,9 +99,12 @@ const Pdfwizard = () => {
 
         const file = new File([blob], "merged.pdf", { type: "application/pdf" });
 
+        console.log(file)
+
         setMergedPdf(file);
 
         const url = URL.createObjectURL(blob);
+        console.log(url)
         const a = document.createElement("a");
         a.href = url;
         a.download = "merged.pdf";
