@@ -90,6 +90,8 @@ const Pdfwizard = () => {
       if (result && result.data) {
         const fileUrl = `${API_BASE_URL}${result.data}`;
 
+        console.log(fileUrl)
+
         const fileResponse = await fetch(fileUrl);
         if (!fileResponse.ok) {
           throw new Error(`Failed to fetch PDF: ${fileResponse.statusText}`);
