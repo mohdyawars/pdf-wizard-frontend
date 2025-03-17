@@ -119,8 +119,8 @@ const Pdfwizard = () => {
         setAlert({ message: "Failed to merge PDFs.", type: "error" });
       }
     } catch (error) {
-      console.log(error)
       setAlert({ message: "An error occurred while merging PDFs.", type: "error" });
+      console.log(error)
     } finally {
       setLoading(false);
     }
