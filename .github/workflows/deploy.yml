@@ -31,12 +31,13 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: 📂 Deploy Frontend to EC2
+      - name: 📂 Pull Latest Code and Deploy on EC2
         run: |
-          ssh ubuntu@${{ secrets.EC2_HOST }} "sudo mkdir -p /var/www/html && sudo chown -R ubuntu:ubuntu /var/www/html && sudo chmod -R 755 /var/www/html"
-          scp -o StrictHostKeyChecking=no -r dist/* ubuntu@${{ secrets.EC2_HOST }}:/var/www/html/
-
-      - name: 🔄 Restart Web Server
-        run: |
-          ssh ubuntu@${{ secrets.EC2_HOST }} "sudo systemctl restart nginx"
-
+          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            cd /home/ubuntu/pdf-wizard-frontend  # Change to your frontend directory
+            git pull origin master  # Pull the latest code from GitHub
+            npm install  # Install any new dependencies
+            npm run build  # Build the frontend again
+            sudo cp -r dist/* /var/www/html/  # Copy built files to Nginx directory
+            sudo systemctl restart nginx  # Restart Nginx to apply changes
+          EOF
