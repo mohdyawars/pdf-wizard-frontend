@@ -83,44 +83,21 @@ const Pdfwizard = () => {
       setAlert({ message: "Please select at least 2 PDF files to merge", type: "error" });
       return;
     }
-
+  
     setLoading(true);
     try {
       const result = await mergePdfs(selectedFiles);
-    
+  
       console.error(result);
-    
+  
       if (result && result.data) {
         const fileUrl = result.data.startsWith("http") ? result.data : `${API_BASE_URL}${result.data}`;
-    
+  
         console.error("Opening file in new tab:", fileUrl);
-    
-        // Open the merged PDF in a new tab
+  
+        // Open the merged PDF only in a new tab
         window.open(fileUrl, "_blank");
-
-        console.log(fileUrl)
-
-        const fileResponse = await fetch(fileUrl);
-        if (!fileResponse.ok) {
-          throw new Error(`Failed to fetch PDF: ${fileResponse.statusText}`);
-        }
-
-        const blob = await fileResponse.blob();
-
-        const file = new File([blob], "merged.pdf", { type: "application/pdf" });
-
-        console.log(file)
-
-        setMergedPdf(file);
-
-        const url = URL.createObjectURL(blob);
-        console.log(url)
-        const a = document.createElement("a");
-        a.href = url;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
+  
         setAlert({ message: "PDFs merged successfully!", type: "success" });
       } else {
         setAlert({ message: "Failed to merge PDFs.", type: "error" });
@@ -128,11 +105,11 @@ const Pdfwizard = () => {
     } catch (error) {
       console.error(error);
       setAlert({ message: "An error occurred while merging PDFs.", type: "error" });
-      console.error(error);
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-">
