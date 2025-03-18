@@ -3,41 +3,73 @@ name: 🚀 Deploy Frontend to AWS EC2
 on:
   push:
     branches:
-      - master  # Change this to match your default branch
+      - master  # Update if your main branch has a different name
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: 🏗️ Install Node.js & Dependencies
+      - name: 🏗️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'  # Use the Node.js version compatible with your project
+          node-version: '18'
+          cache: 'npm'
 
       - name: 📦 Install Dependencies
-        run: npm install
+        run: npm ci --prefer-offline
 
-      - name: 🔨 Build Frontend
-        run: npm run build  # Ensure this generates the `dist/` folder
+      - name: 🔨 Build Project
+        run: npm run build
+        env:
+          NODE_ENV: production
 
-      - name: 🔑 Setup SSH Key
+      - name: 🔍 Verify Build Output
+        run: |
+          echo "Build contents:"
+          ls -lah dist/
+
+      - name: 🔑 Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: 📂 Pull Latest Code and Deploy on EC2
+      - name: 🚚 Deploy to EC2
         run: |
-          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /home/ubuntu/pdf-wizard-frontend  # Change to your frontend directory
-            git pull origin master  # Pull the latest code from GitHub
-            npm install  # Install any new dependencies
-            npm run build  # Build the frontend again
-            sudo cp -r dist/* /var/www/html/  # Copy built files to Nginx directory
-            sudo systemctl restart nginx  # Restart Nginx to apply changes
-          EOF
+          # Create directory if not exists and set permissions
+          ssh ubuntu@${{ secrets.EC2_HOST }} \
+            "sudo mkdir -p /var/www/html && \
+             sudo chown -R ubuntu:www-data /var/www/html && \
+             sudo chmod -R 775 /var/www/html"
+
+          # Sync files with rsync (better than scp for deployments)
+          rsync -avz --delete --progress \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            dist/ \
+            ubuntu@${{ secrets.EC2_HOST }}:/var/www/html/
+
+          # Verify remote files
+          ssh ubuntu@${{ secrets.EC2_HOST }} \
+            "ls -lah /var/www/html/ && \
+             echo 'Total files deployed:' && \
+             find /var/www/html/ -type f | wc -l"
+
+      - name: 🔄 Refresh Web Server
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} \
+            "sudo rm -rf /var/cache/nginx/* && \
+             sudo systemctl restart nginx && \
+             sudo systemctl status nginx"
+
+      - name: 🌐 Verify Deployment
+        run: |
+          curl -I https://${{ secrets.DOMAIN_NAME }} || \
+          curl -I http://${{ secrets.EC2_HOST }}
