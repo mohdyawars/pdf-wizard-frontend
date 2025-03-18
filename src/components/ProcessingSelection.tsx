@@ -18,7 +18,7 @@ const ProcessingSelection: React.FC<ProcessingSelectionProps> = ({
           {loading ? (
             <p>⏳ Extracting text...</p>
           ) : extractedText ? (
-            <pre className="whitespace-pre-wrap">{extractedText}</pre>
+            <pre className="whitespace-pre-wrap max-h-60 overflow-auto p-2 border-gray-300 rounded-md">{extractedText}</pre>
           ) : (
             <p>📜 Extracted text will appear here...</p>
           )}
