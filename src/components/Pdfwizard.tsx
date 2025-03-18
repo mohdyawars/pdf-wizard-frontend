@@ -61,7 +61,7 @@ const Pdfwizard = () => {
 
       if (result?.data?.status === "success" && Array.isArray(result?.data?.images) && result.data.images.length > 0) {
         const imageUrls = result.data.images.map((img: { url: string }) =>
-          img.url.startsWith("http") ? img.url : `${API_BASE_URL}${img.url}`
+          img.url.startsWith("http") ? img.url : `${API_BASE_URL}/${img.url}`
         );        setExtractedImages(imageUrls);
         setAlert({ message: "Images extracted successfully", type: "success" });
       } else {
