@@ -32,7 +32,7 @@ const Pdfwizard = () => {
   // Handle text extraction
   const handleExtractText = async () => {
     if (selectedFiles.length === 0) {
-      setAlert({ message: "Pleaseeeeee select a PDF file first.", type: "error" });
+      setAlert({ message: "Please select a PDF file first.", type: "error" });
       return;
     }
 
