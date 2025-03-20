@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Pdfwizard from "./components/Pdfwizard";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
         </Routes>
       </div>
+      <Footer />
     </Router>
   );
 }

@@ -7,6 +7,7 @@ import Actions from "./Actions";
 import Alert from "./Alert";
 import { extractImagesFromPdf, extractTextFromPdf } from "../api";
 import { mergePdfs } from "../api";
+import uploadFile from "../utils/uploadFile";
 
 
 
@@ -20,13 +21,30 @@ const Pdfwizard = () => {
   const [extractedImages, setExtractedImages] = useState<string[]>([]);
   const [mergedPdf, setMergedPdf] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<{ key: string; size: number; lastModified: number }[]>([]);
 
   // Handle file selection
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setSelectedFiles(Array.from(event.target.files));
+    if (!event.target.files) return;
+
+    const newFiles = Array.from(event.target.files);
+
+    // Remove duplicates from selectedFiles
+    const uniqueFiles = newFiles.filter(newFile =>
+      !selectedFiles.some(existingFile =>
+        existingFile.name === newFile.name &&
+        existingFile.size === newFile.size &&
+        existingFile.lastModified === newFile.lastModified
+      )
+    );
+
+    if (uniqueFiles.length === 0) {
+      setAlert({ message: "These files are already selected.", type: "warning" });
+      return;
     }
+
+    setSelectedFiles(prev => [...prev, ...uniqueFiles]);
   };
 
   // Handle text extraction
@@ -37,15 +55,31 @@ const Pdfwizard = () => {
     }
 
     setLoading(true);
-    const result = await extractTextFromPdf(selectedFiles[0]);
-    console.log(result)
-    setLoading(false);
 
-    if (result && result.data.status === "success") {
-      const textContent = Object.values(result.data.content).join("\n\n");
-      setExtractedText(textContent);
-    } else {
-      setExtractedText("Failed to extract text.");
+    try {
+      // ✅ Pass uploadedFiles to check for duplicates
+      const fileKey = await uploadFile(selectedFiles[0]);
+
+      if (!fileKey) {
+        setAlert({ message: "File upload failed!", type: "error" });
+        setLoading(false);
+        return;
+      }
+
+      const result = await extractTextFromPdf(fileKey);
+      console.log(result);
+
+      if (result && result.data.status === "success") {
+        const textContent = Object.values(result.data.content).join("\n\n");
+        setExtractedText(textContent);
+      } else {
+        setExtractedText("Failed to extract text.");
+      }
+    } catch (error) {
+      console.error("Error extracting text:", error);
+      setExtractedText("Error extracting text.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,12 +91,24 @@ const Pdfwizard = () => {
 
     setLoading(true);
     try {
-      const result = await extractImagesFromPdf(selectedFiles[0]);
+      const file = selectedFiles[0];
+      const fileKey = await handleUploadToS3(file);
+
+      if (!fileKey) {
+        setAlert({ message: "File upload failed!", type: "error" });
+        setLoading(false);
+        return;
+      }
+
+      // 🔍 Extract images
+      const result = await extractImagesFromPdf(fileKey);
+      console.log(result);
 
       if (result?.data?.status === "success" && Array.isArray(result?.data?.images) && result.data.images.length > 0) {
         const imageUrls = result.data.images.map((img: { url: string }) =>
           img.url.startsWith("http") ? img.url : `${API_BASE_URL}/${img.url}`
-        );        setExtractedImages(imageUrls);
+        );
+        setExtractedImages(imageUrls);
         setAlert({ message: "Images extracted successfully", type: "success" });
       } else {
         setExtractedImages([]);
@@ -83,21 +129,21 @@ const Pdfwizard = () => {
       setAlert({ message: "Please select at least 2 PDF files to merge", type: "error" });
       return;
     }
-  
+
     setLoading(true);
     try {
       const result = await mergePdfs(selectedFiles);
-  
+
       console.error(result);
-  
+
       if (result && result.data) {
         const fileUrl = result.data.startsWith("http") ? result.data : `${API_BASE_URL}${result.data}`;
-  
+
         console.error("Opening file in new tab:", fileUrl);
-  
+
         // Open the merged PDF only in a new tab
         window.open(fileUrl, "_blank");
-  
+
         setAlert({ message: "PDFs merged successfully!", type: "success" });
       } else {
         setAlert({ message: "Failed to merge PDFs.", type: "error" });
@@ -109,15 +155,45 @@ const Pdfwizard = () => {
       setLoading(false);
     }
   };
-  
+
+  const handleUploadToS3 = async (file: File) => {
+    setAlert(null);
+
+    // ✅ Check if file is already uploaded using size + lastModified (more accurate)
+    const existingFile = uploadedFiles.find(f => f.size === file.size && f.lastModified === file.lastModified);
+    if (existingFile) {
+      console.log("File already uploaded:", existingFile.key);
+      return existingFile.key; // Reuse the existing fileKey
+    }
+
+    // 🔄 Upload if not uploaded yet
+    const fileKey = await uploadFile(file);
+    if (fileKey) {
+      setUploadedFiles(prev => [...prev, { key: fileKey, size: file.size, lastModified: file.lastModified }]); // Store file details
+      setAlert({ message: "File uploaded successfully", type: "success" });
+      return fileKey;
+    } else {
+      setAlert({ message: "Upload failed", type: "error" });
+      return null;
+    }
+  };
+
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-" style={{ "fontFamily": "Poppins" }}>
       <Hero />
 
       <FileUpload
         handleFileUpload={handleFileUpload}
         selectedFiles={selectedFiles}
+        uploadFile={async (file) => {
+          const fileKey = await handleUploadToS3(file);
+          if (fileKey) {
+            console.log("Uploaded file key:", fileKey);
+            return fileKey; // Ensure the component receives the uploaded file reference
+          }
+          return null;
+        }}
       />
 
       <FeatureSelection
