@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { ChevronsDownUpIcon } from "lucide-react";
-
+import { FaFileExcel, FaFileWord, FaFilePowerpoint } from "react-icons/fa"
+import { TbJpg } from "react-icons/tb";
 
 const DropDown = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div
-      className="relative"
+      className="relative inline-block text-left"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
     >
       <button
-        className="text-white text-lg pl-8 font-bold flex items-center space-x-2"
+        className="text-white text-md pl-8 font-bold flex items-center space-x-2"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>CONVERT PDF</span>
@@ -31,26 +33,30 @@ const DropDown = () => {
         </svg>
       </button>
 
-      {isOpen && <div className="absolute left-0 mt-2 w-44 bg-white shadow-lg rounded-lg">
+      {isOpen && <div className="absolute left-0 top-left mt-0 w-54 bg-white shadow-lg rounded-lg">
         <ul className="py-4 text-sm text-gray-700">
           <li>
-            <a href="#" className="block px-4 py-2 hover:bg-gray-200">
-              Dashboard
+            <a href="#" className="flex items-center px-4 py-2 hover:bg-gray-200">
+              <TbJpg className="mr-2 text-yellow-800 " />
+              PDF to JPG
             </a>
           </li>
           <li>
-            <a href="#" className="block px-4 py-2 hover:bg-gray-200">
-              Settings
+            <a href="#" className="flex items-center px-4 py-2 hover:bg-gray-200">
+              <FaFileWord className="mr-2 text-blue-600" />
+              PDF to WORD
             </a>
           </li>
           <li>
-            <a href="#" className="block px-4 py-2 hover:bg-gray-200">
-              Earnings
+            <a href="#" className="flex items-center px-4 py-2 hover:bg-gray-200">
+              <FaFilePowerpoint className="mr-2 text-orange-600" />
+              PDF to POWERPOINT
             </a>
           </li>
           <li>
-            <a href="#" className="block px-4 py-2 hover:bg-gray-200">
-              Sign out
+            <a href="#" className="flex items-center px-4 py-2 hover:bg-gray-200">
+              <FaFileExcel className="mr-2 text-green-800" />
+              PDF to EXCEL
             </a>
           </li>
         </ul>

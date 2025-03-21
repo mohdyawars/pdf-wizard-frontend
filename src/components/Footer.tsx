@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
+import { BsTwitterX } from "react-icons/bs";
+import { FaInstagram, FaLink, FaLinkedin } from "react-icons/fa";
 
 const Footer = () => {
   const location = useLocation();
-  const hideFooterOn = ["/contact/", "/privacy-policy"]; // Add pages where you want to hide the footer
+  const hideFooterOn = ["/contact/", "/privacy-policy/", "/faq/"]; // Add pages where you want to hide the footer
 
   if (hideFooterOn.includes(location.pathname)) {
     return null;
@@ -35,8 +37,8 @@ const Footer = () => {
                 Home
               </a>
             </li>
-            <li><a href="#" className="hover:underline">Services</a></li>
-            <li><a href="#" className="hover:underline">Barcode Scanner</a></li>
+            <li><a href="/edit-pdf" className="hover:underline">Edit PDF</a></li>
+            <li><a href="/merge-pdf" className="hover:underline">Merge PDF</a></li>
           </ul>
         </div>
 
@@ -45,20 +47,42 @@ const Footer = () => {
         <div>
           <h3 className="text-white font-medium">Support</h3>
           <ul className="mt-2 space-y-1 text-sm">
-            <li><a href="#" className="hover:underline">Help Center</a></li>
             <li><Link to="contact/" className="hover:underline">Contact Us</Link></li>
-            <li><a href="#" className="hover:underline">Privacy Policy</a></li>
-            <li><a href="#" className="hover:underline">FAQ</a></li>
+            <li><Link to="privacy-policy/" className="hover:underline">Privacy Policy</Link></li>
+            <li><Link to="faq/" className="hover:underline">FAQ</Link></li>
           </ul>
         </div>
 
         {/* Follow Us */}
         <div>
           <h3 className="text-white font-medium">Follow Us</h3>
-          <div className="flex space-x-4 mt-2">
-            <a href="#" className="hover:text-white"><i className="fab fa-twitter"></i></a>
-            <a href="#" className="hover:text-white"><i className="fab fa-facebook"></i></a>
-            <a href="#" className="hover:text-white"><i className="fab fa-linkedin"></i></a>
+          <div className="flex space-x-4 mt-4">
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-all duration-300"
+            >
+              <BsTwitterX size={18} />
+            </a>
+
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-all duration-300"
+            >
+              <FaInstagram size={18} />
+            </a>
+
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-all duration-300"
+            >
+              <FaLinkedin size={18} />
+            </a>
           </div>
         </div>
       </div>

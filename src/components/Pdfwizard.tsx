@@ -183,72 +183,72 @@ const Pdfwizard = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-" style={{ "fontFamily": "Poppins" }}>
       <Hero />
 
-      <FileUpload
-        handleFileUpload={handleFileUpload}
-        selectedFiles={selectedFiles}
-        uploadFile={async (file) => {
-          const fileKey = await handleUploadToS3(file);
-          if (fileKey) {
-            console.log("Uploaded file key:", fileKey);
-            return fileKey; // Ensure the component receives the uploaded file reference
-          }
-          return null;
-        }}
-      />
+      {/* <FileUpload */}
+      {/*   handleFileUpload={handleFileUpload} */}
+      {/*   selectedFiles={selectedFiles} */}
+      {/*   uploadFile={async (file) => { */}
+      {/*     const fileKey = await handleUploadToS3(file); */}
+      {/*     if (fileKey) { */}
+      {/*       console.log("Uploaded file key:", fileKey); */}
+      {/*       return fileKey; // Ensure the component receives the uploaded file reference */}
+      {/*     } */}
+      {/*     return null; */}
+      {/*   }} */}
+      {/* /> */}
+      {/**/}
+      {/* <FeatureSelection */}
+      {/*   selectedFeature={selectedFeature} */}
+      {/*   setSelectedFeature={setSelectedFeature} */}
+      {/* /> */}
+      {/**/}
+      {/* <ProcessingSelection */}
+      {/*   selectedFeature={selectedFeature} */}
+      {/*   extractedText={extractedText} */}
+      {/*   extractedImages={extractedImages} // Pass extracted images here */}
+      {/*   loading={loading} */}
+      {/* /> */}
+      {/**/}
+      {/* {selectedFeature === "text" && ( */}
+      {/*   <> */}
+      {/*     <button */}
+      {/*       onClick={handleExtractText} */}
+      {/*       disabled={loading} */}
+      {/*       className="px-4 py-2 bg-blue-600 text-white rounded-md mt-4" */}
+      {/*     > */}
+      {/*       {loading ? "Extracting..." : "Extract Text"} */}
+      {/*     </button> */}
+      {/*   </> */}
+      {/* )} */}
+      {/**/}
+      {/* {selectedFeature === "images" && ( */}
+      {/*   <button */}
+      {/*     onClick={handleImageExtraction} */}
+      {/*     disabled={loading} */}
+      {/*     className="px-4 py-2 bg-yellow-600 text-white rounded-md mt-4" */}
+      {/*   > */}
+      {/*     {loading ? "Extracting Images..." : "Extract Images"} */}
+      {/*   </button> */}
+      {/* )} */}
+      {/**/}
+      {/* {selectedFeature === "merge" && ( */}
+      {/*   <button */}
+      {/*     onClick={handleMergePdfs} */}
+      {/*     disabled={loading} */}
+      {/*     className="px-4 py-2 bg-green-600 text-white rounded-md mt-4" */}
+      {/*   > */}
+      {/*     {loading ? "Merging..." : "Merge PDFs"} */}
+      {/*   </button> */}
+      {/* )} */}
 
-      <FeatureSelection
-        selectedFeature={selectedFeature}
-        setSelectedFeature={setSelectedFeature}
-      />
-
-      <ProcessingSelection
-        selectedFeature={selectedFeature}
-        extractedText={extractedText}
-        extractedImages={extractedImages} // Pass extracted images here
-        loading={loading}
-      />
-
-      {selectedFeature === "text" && (
-        <>
-          <button
-            onClick={handleExtractText}
-            disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md mt-4"
-          >
-            {loading ? "Extracting..." : "Extract Text"}
-          </button>
-        </>
-      )}
-
-      {selectedFeature === "images" && (
-        <button
-          onClick={handleImageExtraction}
-          disabled={loading}
-          className="px-4 py-2 bg-yellow-600 text-white rounded-md mt-4"
-        >
-          {loading ? "Extracting Images..." : "Extract Images"}
-        </button>
-      )}
-
-      {selectedFeature === "merge" && (
-        <button
-          onClick={handleMergePdfs}
-          disabled={loading}
-          className="px-4 py-2 bg-green-600 text-white rounded-md mt-4"
-        >
-          {loading ? "Merging..." : "Merge PDFs"}
-        </button>
-      )}
-
-      <Actions
-        setSelectedFiles={setSelectedFiles}
-        extractedText={extractedText}
-        setExtractedText={setExtractedText}
-        extractedImages={extractedImages}
-        setExtractedImages={setExtractedImages}
-        selectedFiles={selectedFiles}
-      />
-      {alert && <Alert message={alert.message} type={alert.type} onClose={() => setAlert(null)} />}
+      {/* <Actions */}
+      {/*   setSelectedFiles={setSelectedFiles} */}
+      {/*   extractedText={extractedText} */}
+      {/*   setExtractedText={setExtractedText} */}
+      {/*   extractedImages={extractedImages} */}
+      {/*   setExtractedImages={setExtractedImages} */}
+      {/*   selectedFiles={selectedFiles} */}
+      {/* /> */}
+      {/* {alert && <Alert message={alert.message} type={alert.type} onClose={() => setAlert(null)} />} */}
     </div>
   );
 };
