@@ -68,7 +68,7 @@ export const getGoogleDriveToken = async (): Promise<string> => {
         tokenClient = window.google.accounts.oauth2.initTokenClient({
           client_id: CLIENT_ID,
           scope: SCOPE,
-          callback: (response) => {
+          callback: (response: any) => {
             if (response.error) {
               console.error("Google Sign-in error:", response.error);
               reject(new Error(response.error));
@@ -80,7 +80,7 @@ export const getGoogleDriveToken = async (): Promise<string> => {
       }
 
       // Use an empty prompt to avoid showing the consent screen if the user has already granted permissions
-      tokenClient.requestAccessToken({ prompt: "" });
+      // tokenClient.requestAccessToken({ prompt: "" });
     });
   } catch (error) {
     console.error("Error getting Google Drive token:", error);
