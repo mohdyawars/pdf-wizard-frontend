@@ -3,18 +3,13 @@ import axios from "axios";
 const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
 // const API_BASE_URL: string = "http://43.205.239.69:80";
 
-export const extractTextFromPdf = async (file: File) => {
-  const formData = new FormData();
-  formData.append("pdf", file);
-
+export const extractTextFromPdf = async (fileKey: string) => {
   try {
     const response = await axios.post(
       `${API_BASE_URL}/api/v1/pdfs/extract-text/`,
-      formData,
+      { fileKey: fileKey },
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "application/json" }
       }
     );
     return response.data;
@@ -24,18 +19,13 @@ export const extractTextFromPdf = async (file: File) => {
   }
 };
 
-export const extractImagesFromPdf = async (file: File) => {
-  const formData = new FormData;
-  formData.append("pdf", file);
-
+export const extractImagesFromPdf = async (fileKey: string) => {
   try {
     const response = await axios.post(
       `${API_BASE_URL}/api/v1/pdfs/extract-images/`,
-      formData,
+      { fileKey: fileKey },
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "application/json" }
       }
     );
     return response.data;
