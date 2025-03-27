@@ -1,18 +1,25 @@
+import { useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { MdMerge, MdCallSplit, MdEdit } from "react-icons/md";
 import { FaCompressArrowsAlt, FaFileExcel, FaFileWord, FaFilePowerpoint } from "react-icons/fa";
 import { TbJpg } from "react-icons/tb";
 
 const Hero = () => {
 
+  const location = useLocation();
+  const hideFooterOn = ["/merge-pdf/"]; // Add pages where you want to hide the footer
+  if (hideFooterOn.includes(location.pathname)) {
+    return null;
+  }
   const tools = [
-    { name: "Merge PDF", desc: "Combine multiple PDFs easily.", icon: <MdMerge className="text-red-600 text-5xl" /> },
-    { name: "Split PDF", desc: "Extract specific pages quickly.", icon: <MdCallSplit className="text-red-600 text-5xl" /> },
-    { name: "Compress PDF", desc: "Reduce file size without losing quality.", icon: <FaCompressArrowsAlt className="text-cyan-600 text-5xl" /> },
-    { name: "PDF to Word", desc: "Convert PDFs into editable Word files.", icon: <FaFileWord className="text-blue-600 text-5xl" /> },
-    { name: "PDF to JPG", desc: "Convert PDFs to images seamlessly.", icon: <TbJpg className="text-yellow-800 text-5xl" /> },
-    { name: "PDF to Powerpoint", desc: "Convert PDFs into slides", icon: <FaFilePowerpoint className="text-orange-600 text-5xl" /> },
-    { name: "PDF to Excel", desc: "Convert PDFs into excel", icon: <FaFileExcel className="text-green-800 text-5xl" /> },
-    { name: "Edit PDF", desc: "Seamlessly edit PDF", icon: <MdEdit className="text-gray-800 text-5xl" /> },
+    { name: "Merge PDF", desc: "Combine multiple PDFs easily.", icon: <MdMerge className="text-red-600 text-5xl" />, link: "/merge-pdf" },
+    { name: "Split PDF", desc: "Extract specific pages quickly.", icon: <MdCallSplit className="text-red-600 text-5xl" />, link: "/split-pdf" },
+    { name: "Compress PDF", desc: "Reduce file size without losing quality.", icon: <FaCompressArrowsAlt className="text-cyan-600 text-5xl" />, link: "/compress-pdf" },
+    { name: "PDF to Word", desc: "Convert PDFs into editable Word files.", icon: <FaFileWord className="text-blue-600 text-5xl" />, link: "/convert-to-word" },
+    { name: "PDF to JPG", desc: "Convert PDFs to images seamlessly.", icon: <TbJpg className="text-yellow-800 text-5xl" />, link: "/convert-to-jpg" },
+    { name: "PDF to Powerpoint", desc: "Convert PDFs into slides", icon: <FaFilePowerpoint className="text-orange-600 text-5xl" />, link: "/convert-to-powerpoint" },
+    { name: "PDF to Excel", desc: "Convert PDFs into excel", icon: <FaFileExcel className="text-green-800 text-5xl" />, link: "/convert-to-excel" },
+    { name: "Edit PDF", desc: "Seamlessly edit PDF", icon: <MdEdit className="text-gray-800 text-5xl" />, link: "/edit-pdf" },
   ]
   return (
     <section className="bg-gradient-to-b from-gray-100 to-white py-16 text-center">
@@ -28,11 +35,11 @@ const Hero = () => {
       {/* PDF Tools Grid */}
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-6">
         {tools.map((tool, index) => (
-          <div key={index} className="p-6 bg-white shadow-lg rounded-lg text-center flex flex-col items-center">
+          <Link to={tool.link} key={index} className="p-6 bg-white shadow-lg rounded-lg text-center flex flex-col items-center">
             {tool.icon}
             <h3 className="text-lg font-bold text-gray-800 mt-4">{tool.name}</h3>
             <p className="text-sm text-gray-600 mt-2">{tool.desc}</p>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

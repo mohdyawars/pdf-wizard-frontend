@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { FaFileExcel, FaFileWord, FaFilePowerpoint } from "react-icons/fa"
 import { TbJpg } from "react-icons/tb";
 
@@ -36,32 +37,32 @@ const DropDown = () => {
       {isOpen && <div className="absolute left-0 top-left mt-0 w-54 bg-white shadow-lg rounded-lg">
         <ul className="py-4 text-sm text-gray-700">
           <li>
-            <a href="#" className="flex items-center px-4 py-2 hover:bg-gray-200">
+            <Link to="/convert-to-jpg" className="flex items-center px-4 py-2 hover:bg-gray-200">
               <TbJpg className="mr-2 text-yellow-800 " />
               PDF to JPG
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#" className="flex items-center px-4 py-2 hover:bg-gray-200">
+            <Link to="/convert-to-word" className="flex items-center px-4 py-2 hover:bg-gray-200">
               <FaFileWord className="mr-2 text-blue-600" />
               PDF to WORD
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#" className="flex items-center px-4 py-2 hover:bg-gray-200">
+            <Link to="/convert-to-powerpoint" className="flex items-center px-4 py-2 hover:bg-gray-200">
               <FaFilePowerpoint className="mr-2 text-orange-600" />
               PDF to POWERPOINT
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#" className="flex items-center px-4 py-2 hover:bg-gray-200">
+            <Link to="/convert-to-excel" className="flex items-center px-4 py-2 hover:bg-gray-200">
               <FaFileExcel className="mr-2 text-green-800" />
               PDF to EXCEL
-            </a>
+            </Link>
           </li>
         </ul>
       </div>}
-    </div>
+    </div >
   )
 }
 

@@ -4,8 +4,7 @@ import { FaInstagram, FaLink, FaLinkedin } from "react-icons/fa";
 
 const Footer = () => {
   const location = useLocation();
-  const hideFooterOn = ["/contact/", "/privacy-policy/", "/faq/"]; // Add pages where you want to hide the footer
-
+  const hideFooterOn = ["/contact/", "/privacy-policy/", "/faq/", "/merge-pdf/"]; // Add pages where you want to hide the footer
   if (hideFooterOn.includes(location.pathname)) {
     return null;
   }
@@ -37,8 +36,8 @@ const Footer = () => {
                 Home
               </a>
             </li>
-            <li><a href="/edit-pdf" className="hover:underline">Edit PDF</a></li>
-            <li><a href="/merge-pdf" className="hover:underline">Merge PDF</a></li>
+            <li><a href="edit-pdf/" className="hover:underline">Edit PDF</a></li>
+            <li><Link to="merge-pdf/" className="hover:underline">Merge PDF</Link></li>
           </ul>
         </div>
 

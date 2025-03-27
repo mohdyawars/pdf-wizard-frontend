@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/pdf_wiz.png";
-import { Link } from "react-router-dom";
 import DropDown from "./Dropdown";
 import { FaBars } from "react-icons/fa"
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
   return (
     <nav className="bg-slate-700 p-4">
       <div className="max-w-7xl w-auto flex justify-start items-center">
@@ -22,9 +24,9 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-8">
-          <Link to="#" className="text-white text-md font-bold pl-10">EDIT PDF</Link>
-          <Link to="#" className="text-white text-md font-bold pl-8">MERGE PDF</Link>
-          <Link to="#" className="text-white text-md font-bold pl-8">SPLIT PDF</Link>
+          <Link to="edit-pdf/" className=" text-white text-md font-bold pl-10">EDIT PDF</Link>
+          <Link to="merge-pdf/" className="text-white text-md font-bold pl-8">MERGE PDF</Link>
+          <Link to="split-pdf/" className=" text-white text-md font-bold pl-8">SPLIT PDF</Link>
           <DropDown />
         </div>
 
