@@ -53,3 +53,20 @@ export const mergePdfs = async (files: File[]) => {
     throw error;
   }
 };
+
+export const splitPdf = async (fileKey: string) => {
+  try {
+    const formData = new FormData();
+    formData.append("fileKey", fileKey);
+
+    const response = await axios.post(`${API_BASE_URL}/api/v1/pdfs/split/`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error splitting PDF:", error);
+    throw error;
+  }
+};
+
