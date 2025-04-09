@@ -1,10 +1,23 @@
 import { useState } from "react";
 // import { initializeGoogleAPIs, pickFileFromGoogleDrive } from "../utils/googleDrive";
 import { renderPdfPages } from "../utils/pdfPreview";
-import { splitPdf } from "../api";
+import { PDFDocument } from 'pdf-lib';
+import JSZip from 'jszip';
 
 
 const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
+
+// Spinner component
+const Spinner = () => (
+  <div className='flex justify-center items-center'>
+    <div className='animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600'></div>
+  </div>
+);
+
+// Define a more specific type for splitResultPages
+interface SplitResultPage {
+  url: string;
+}
 
 const SplitPDF = () => {
   // const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
@@ -14,7 +27,7 @@ const SplitPDF = () => {
   const [pageRanges, setPageRanges] = useState<string>('');
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [splitResultPages, setSplitResultPages] = useState<any[]>([]);
+  const [splitResultPages, setSplitResultPages] = useState<SplitResultPage[]>([]);
 
 
   // useEffect(() => {
@@ -57,60 +70,89 @@ const SplitPDF = () => {
   const handleLocalFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
+      setIsLoading(true);
       const fileArray = Array.from(files);
       setSelectedFiles(prev => [...prev, ...fileArray]);
 
       const previews = await Promise.all(fileArray.map(file => renderPdfPages(file)));
       setPreviewPages(prev => [...prev, ...previews]);
+      setIsLoading(false);
     }
   };
 
-  const handleSplit = async () => {
+  const handleSplitAndPrepareDownload = async () => {
     if (selectedFiles.length === 0) {
       alert('Please select a PDF file first');
       return;
     }
 
-    if (splitMode === 'range') {
-      // Validate page range format
-      const range = pageRanges.split('-');
-      if (range.length !== 2 || isNaN(Number(range[0])) || isNaN(Number(range[1]))) {
-        alert('Please enter a valid page range (e.g., 1-3)');
-        return;
-      }
-    }
-
     setIsLoading(true);
     try {
       const file = selectedFiles[0];
-      let result;
+      const pdfData = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(pdfData);
+      const zip = new JSZip();
 
       if (splitMode === 'range') {
+        const mergedPdf = await PDFDocument.create();
         const [start, end] = pageRanges.split('-').map(Number);
-        result = await splitPdf(file, start, end);
-
+        for (let i = start; i <= end; i++) {
+          const [copiedPage] = await mergedPdf.copyPages(pdfDoc, [i - 1]);
+          mergedPdf.addPage(copiedPage);
+        }
+        const mergedPdfBytes = await mergedPdf.save();
+        zip.file('merged.pdf', mergedPdfBytes);
       } else {
-        // For individual page selection, use min and max of selected pages
-        const start = Math.min(...selectedPages);
-        const end = Math.max(...selectedPages);
-        result = await splitPdf(file, start, end);
+        for (const pageIndex of selectedPages) {
+          const singlePagePdf = await PDFDocument.create();
+          const [copiedPage] = await singlePagePdf.copyPages(pdfDoc, [pageIndex - 1]);
+          singlePagePdf.addPage(copiedPage);
+          const singlePagePdfBytes = await singlePagePdf.save();
+          zip.file(`page_${pageIndex}.pdf`, singlePagePdfBytes);
+        }
       }
 
-      if (result?.data?.pages) {
-        console.log('Split pages:', result.data.pages);
-        setSplitResultPages(result.data.pages);
-      
-        // Optionally auto-open in new tab
-        // result.data.pages.forEach((page: any) => {
-        //   window.open(page.url, '_blank');
-        // });
-      }
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(zipBlob);
+      setSplitResultPages([{ url }]);
     } catch (error) {
       console.error('Error splitting PDF:', error);
       alert('Failed to split PDF. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleMerge = async () => {
+    if (selectedFiles.length === 0 || splitMode !== 'range' || !pageRanges) {
+      alert('Please select a PDF file and a valid range first');
+      return;
+    }
+
+    const [start, end] = pageRanges.split('-').map(Number);
+    const file = selectedFiles[0];
+    const pdfData = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(pdfData);
+    const mergedPdf = await PDFDocument.create();
+
+    for (let i = start; i <= end; i++) {
+      const [copiedPage] = await mergedPdf.copyPages(pdfDoc, [i - 1]);
+      mergedPdf.addPage(copiedPage);
+    }
+
+    const mergedPdfBytes = await mergedPdf.save();
+    const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
+
+  // Update preview selection logic
+  const handlePreviewSelect = (index: number) => {
+    setSelectedPages((prev) =>
+      prev.includes(index + 1)
+        ? prev.filter((p) => p !== index + 1)
+        : [...prev, index + 1]
+    );
   };
 
   return (
@@ -171,7 +213,7 @@ const SplitPDF = () => {
               )}
 
               {/* Page Selection */}
-              {splitMode === 'pages' && (
+              {/* {splitMode === 'pages' && (
                   <div className='mb-6'>
                       <label className='block text-sm font-medium mb-2'>
                           Select Pages
@@ -182,29 +224,55 @@ const SplitPDF = () => {
                                   key={index}
                                   className={`p-2 border rounded text-sm ${
                                       selectedPages.includes(index + 1)
-                                          ? 'bg-blue-600 text-white'
+                                          ? 'bg-green-600 text-white'
                                           : 'bg-white'
                                   }`}
-                                  onClick={() => {
-                                      setSelectedPages((prev) =>
-                                          prev.includes(index + 1)
-                                              ? prev.filter(
-                                                    (p) => p !== index + 1
-                                                )
-                                              : [...prev, index + 1]
-                                      );
-                                  }}
+                                  onClick={() => handlePreviewSelect(index)}
                               >
                                   {index + 1}
                               </button>
                           ))}
                       </div>
                   </div>
-              )}
+              )} */}
+
+              {/* Display Selected Range or Pages */}
+              <div className='mb-6 border-dashed border-2 border-gray-300 p-4'>
+                  <h3 className='text-lg font-semibold mb-2'>Range 1</h3>
+                  <div className='flex flex-wrap gap-2'>
+                      {splitMode === 'range' ? (
+                          <p className='text-sm text-gray-700'>
+                              {pageRanges
+                                  ? `Page ${pageRanges.replace(
+                                        '-',
+                                        ' - Page '
+                                    )}`
+                                  : 'No range selected'}
+                          </p>
+                      ) : (
+                          <>
+                              {selectedPages.length > 0 ? (
+                                  selectedPages.map((page, index) => (
+                                      <span
+                                          key={index}
+                                          className='p-2 border rounded text-sm bg-gray-200'
+                                      >
+                                          Page {page}
+                                      </span>
+                                  ))
+                              ) : (
+                                  <p className='text-sm text-gray-700'>
+                                      No pages selected
+                                  </p>
+                              )}
+                          </>
+                      )}
+                  </div>
+              </div>
 
               {/* Split Button */}
               <button
-                  onClick={handleSplit}
+                  onClick={handleSplitAndPrepareDownload}
                   disabled={isLoading}
                   className={`w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 ${
                       isLoading ? 'opacity-50 cursor-not-allowed' : ''
@@ -212,6 +280,34 @@ const SplitPDF = () => {
               >
                   {isLoading ? 'Splitting...' : 'Split PDF'}
               </button>
+
+              {/* Merge Button */}
+              {/* <button
+                  onClick={handleMerge}
+                  disabled={isLoading || splitMode !== 'range' || !pageRanges}
+                  className={`w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 mt-4 ${
+                      isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+              >
+                  {isLoading ? 'Merging...' : 'Merge PDF'}
+              </button> */}
+
+              {/* Download Zip Button */}
+              {splitResultPages.length > 0 && (
+                  <button
+                      onClick={() => {
+                          const a = document.createElement('a');
+                          a.href = splitResultPages[0].url;
+                          a.download = 'merged_pdfs.zip';
+                          a.click();
+                          URL.revokeObjectURL(splitResultPages[0].url);
+                      }}
+                      className='w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 mt-4'
+                  >
+                      Download as Zip
+                  </button>
+              )}
+
           </div>
 
           {/* Right Side - File Upload and Preview */}
@@ -239,25 +335,77 @@ const SplitPDF = () => {
               </div>
 
               {/* Preview Section */}
-              {previewPages.length > 0 && (
-                  <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
-                      {previewPages[0]?.map((img, index) => (
-                          <div key={index} className='border rounded p-2'>
-                              <img
-                                  src={img}
-                                  alt={`Page ${index + 1}`}
-                                  className='w-full'
-                              />
-                              <p className='text-center mt-2 text-sm'>
-                                  Page {index + 1}
-                              </p>
-                          </div>
-                      ))}
-                  </div>
+              {isLoading ? (
+                  <Spinner />
+              ) : (
+                  previewPages.length > 0 && (
+                      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
+                          {splitMode === 'range' ? (
+                              <>
+                                  <div className='border rounded p-2'>
+                                      <img
+                                          src={previewPages[0][0]}
+                                          alt='Page 1'
+                                          className='w-full h-52 object-contain'
+                                      />
+                                      <p className='text-center mt-2 text-sm'>
+                                          Page 1
+                                      </p>
+                                  </div>
+                                  <div className='flex justify-center items-center'>
+                                      <span className='text-gray-500'>
+                                          -----
+                                      </span>
+                                  </div>
+                                  <div className='border rounded p-2'>
+                                      <img
+                                          src={
+                                              previewPages[0][
+                                                  previewPages[0].length - 1
+                                              ]
+                                          }
+                                          alt={`Page ${previewPages[0].length}`}
+                                          className='w-full h-52 object-contain'
+                                      />
+                                      <p className='text-center mt-2 text-sm'>
+                                          Page {previewPages[0].length}
+                                      </p>
+                                  </div>
+                              </>
+                          ) : (
+                              previewPages[0]?.map((img, index) => (
+                                  <div
+                                      key={index}
+                                      onClick={() => handlePreviewSelect(index)}
+                                      className={`relative border rounded p-2 cursor-pointer transition ${
+                                          selectedPages.includes(index + 1)
+                                              ? 'border-green-500 ring-2 ring-green-500'
+                                              : 'hover:border-blue-400'
+                                      }`}
+                                  >
+                                      <img
+                                          src={img}
+                                          alt={`Page ${index + 1}`}
+                                          className='w-full h-52 object-contain'
+                                      />
+                                      <p className='text-center-2 text-sm'>
+                                          Page {index + 1}
+                                      </p>
+
+                                      {selectedPages.includes(index + 1) && (
+                                          <div className='absolute top-1 left-1 bg-green-600 text-white text-xs px-1.5 py-0.5 rounded shadow'>
+                                              ✓
+                                          </div>
+                                      )}
+                                  </div>
+                              ))
+                          )}
+                      </div>
+                  )
               )}
 
               {/* Split Result Section */}
-              {splitResultPages.length > 0 && (
+              {/* {splitMode === 'pages' && splitResultPages.length > 0 && (
                   <div className='mt-10'>
                       <h2 className='text-xl md:text-2xl font-semibold mb-4'>
                           Split Results
@@ -283,7 +431,7 @@ const SplitPDF = () => {
                           ))}
                       </ul>
                   </div>
-              )}
+              )} */}
           </div>
       </div>
   );
