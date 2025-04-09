@@ -115,10 +115,12 @@ const SplitPDF = () => {
   };
 
   return (
-      <div className='flex h-screen'>
+      <div className='flex flex-col md:flex-row min-h-screen'>
           {/* Left Sidebar - Split Options */}
-          <div className='w-1/4 bg-gray-100 p-6 border-r'>
-              <h2 className='text-xl font-semibold mb-4'>Split Options</h2>
+          <div className='w-full md:w-1/4 bg-gray-100 p-4 md:p-6 border-b md:border-b-0 md:border-r'>
+              <h2 className='text-lg md:text-xl font-semibold mb-4'>
+                  Split Options
+              </h2>
 
               {/* Split Mode Selection */}
               <div className='mb-6'>
@@ -127,7 +129,7 @@ const SplitPDF = () => {
                   </label>
                   <div className='flex space-x-4'>
                       <button
-                          className={`px-4 py-2 rounded ${
+                          className={`px-4 py-2 rounded text-sm ${
                               splitMode === 'range'
                                   ? 'bg-blue-600 text-white'
                                   : 'bg-gray-200'
@@ -137,7 +139,7 @@ const SplitPDF = () => {
                           Range
                       </button>
                       <button
-                          className={`px-4 py-2 rounded ${
+                          className={`px-4 py-2 rounded text-sm ${
                               splitMode === 'pages'
                                   ? 'bg-blue-600 text-white'
                                   : 'bg-gray-200'
@@ -175,11 +177,11 @@ const SplitPDF = () => {
                       <label className='block text-sm font-medium mb-2'>
                           Select Pages
                       </label>
-                      <div className='grid grid-cols-4 gap-2'>
+                      <div className='grid grid-cols-4 sm:grid-cols-6 gap-2'>
                           {previewPages[0]?.map((_, index) => (
                               <button
                                   key={index}
-                                  className={`p-2 border rounded ${
+                                  className={`p-2 border rounded text-sm ${
                                       selectedPages.includes(index + 1)
                                           ? 'bg-blue-600 text-white'
                                           : 'bg-white'
@@ -214,9 +216,11 @@ const SplitPDF = () => {
           </div>
 
           {/* Right Side - File Upload and Preview */}
-          <div className='flex-1 p-6 overflow-auto'>
-              <h1 className='text-4xl font-bold mb-4'>Split PDF files</h1>
-              <p className='text-lg text-gray-600 mb-6'>
+          <div className='flex-1 p-4 md:p-6 overflow-auto'>
+              <h1 className='text-2xl md:text-4xl font-bold mb-4'>
+                  Split PDF files
+              </h1>
+              <p className='text-base md:text-lg text-gray-600 mb-6'>
                   Effortlessly split a large PDF into multiple smaller files
                   with just a few clicks.
               </p>
@@ -237,7 +241,7 @@ const SplitPDF = () => {
 
               {/* Preview Section */}
               {previewPages.length > 0 && (
-                  <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
                       {previewPages[0]?.map((img, index) => (
                           <div key={index} className='border rounded p-2'>
                               <img
@@ -245,7 +249,7 @@ const SplitPDF = () => {
                                   alt={`Page ${index + 1}`}
                                   className='w-full'
                               />
-                              <p className='text-center mt-2'>
+                              <p className='text-center mt-2 text-sm'>
                                   Page {index + 1}
                               </p>
                           </div>
@@ -256,16 +260,16 @@ const SplitPDF = () => {
               {/* Split Result Section */}
               {splitResultPages.length > 0 && (
                   <div className='mt-10'>
-                      <h2 className='text-2xl font-semibold mb-4'>
+                      <h2 className='text-xl md:text-2xl font-semibold mb-4'>
                           Split Results
                       </h2>
                       <ul className='space-y-3'>
                           {splitResultPages.map((page, index) => (
                               <li
                                   key={index}
-                                  className='flex justify-between items-center border p-3 rounded shadow-sm'
+                                  className='flex flex-col sm:flex-row justify-between items-start sm:items-center border p-3 rounded shadow-sm'
                               >
-                                  <span>
+                                  <span className='mb-2 sm:mb-0'>
                                       Page {page.page_number} - {page.filename}
                                   </span>
                                   <a
