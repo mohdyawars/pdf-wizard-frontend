@@ -83,12 +83,11 @@ const SplitPDF = () => {
 
       if (splitMode === 'range') {
         const [start, end] = pageRanges.split('-').map(Number);
-        result = await splitPdf(file, start, end);
+        result = await splitPdf(file, { startPage: start, endPage: end });
       } else {
-        // For individual page selection, use min and max of selected pages
         const start = Math.min(...selectedPages);
         const end = Math.max(...selectedPages);
-        result = await splitPdf(file, start, end);
+        result = await splitPdf(file, { startPage: start, endPage: end });
       }
 
       if (result?.data?.pages) {

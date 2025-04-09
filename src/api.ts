@@ -54,10 +54,12 @@ export const mergePdfs = async (files: File[]) => {
   }
 };
 
-export const splitPdf = async (fileKey: string) => {
+export const splitPdf = async (file: File, options: { startPage: number, endPage: number }) => {
   try {
     const formData = new FormData();
-    formData.append("fileKey", fileKey);
+    formData.append("pdfFile", file);
+    formData.append("startPage", options.startPage.toString());
+    formData.append("endPage", options.endPage.toString());
 
     const response = await axios.post(`${API_BASE_URL}/api/v1/pdfs/split/`, formData, {
       headers: { "Content-Type": "multipart/form-data" }
