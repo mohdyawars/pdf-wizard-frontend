@@ -3,6 +3,9 @@ import { useState } from "react";
 import { renderPdfPages } from "../utils/pdfPreview";
 import { splitPdf } from "../api";
 
+
+const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
+
 const SplitPDF = () => {
   // const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -49,6 +52,8 @@ const SplitPDF = () => {
   //     setIsLoading(false);
   //   }
   // };
+
+
 
   const handleLocalFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -264,7 +269,7 @@ const SplitPDF = () => {
                                       Page {page.page_number} - {page.filename}
                                   </span>
                                   <a
-                                      href={`http://localhost:8000${page.url}`}
+                                      href={`${API_BASE_URL}${page.url}`}
                                       target='_blank'
                                       rel='noopener noreferrer'
                                       className='bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition'
