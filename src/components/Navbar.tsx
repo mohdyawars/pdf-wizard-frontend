@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import logo from "../assets/pdf_wiz.png";
 import DropDown from "./Dropdown";
 import { FaBars } from "react-icons/fa"
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
 
   return (
     <nav className="bg-slate-700 p-4">
@@ -50,9 +49,9 @@ const Navbar = () => {
             </button>
 
             {/* Menu Links */}
-            <Link to="#" className="text-white text-lg font-bold">EDIT PDF</Link>
-            <Link to="#" className="text-white text-lg font-bold">MERGE PDF</Link>
-            <Link to="#" className="text-white text-lg font-bold">SPLIT PDF</Link>
+            <Link to="edit-pdf/" className="text-white text-lg font-bold" onClick={() => setIsOpen(false)}>EDIT PDF</Link>
+            <Link to="merge-pdf/" className="text-white text-lg font-bold" onClick={() => setIsOpen(false)}>MERGE PDF</Link>
+            <Link to="split-pdf/" className="text-white text-lg font-bold" onClick={() => setIsOpen(false)}>SPLIT PDF</Link>
 
             {/* Dropdown Component */}
             <DropDown />
