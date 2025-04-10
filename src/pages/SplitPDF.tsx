@@ -71,12 +71,14 @@ const SplitPDF = () => {
   const handleLocalFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
+      setIsLoading(true);
       const fileArray = Array.from(files);
 
       // Check for non-PDF files
       const nonPdfFiles = fileArray.filter(file => file.type !== 'application/pdf');
       if (nonPdfFiles.length > 0) {
         setAlertMessage('Please upload only PDF files.');
+        setIsLoading(false);
         return;
       }
 
@@ -84,6 +86,7 @@ const SplitPDF = () => {
 
       const previews = await Promise.all(fileArray.map(file => renderPdfPages(file)));
       setPreviewPages(prev => [...prev, ...previews]);
+      setIsLoading(false);
     }
   };
 
