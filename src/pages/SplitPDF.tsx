@@ -3,9 +3,9 @@ import { useState } from "react";
 import { renderPdfPages } from "../utils/pdfPreview";
 import { PDFDocument } from 'pdf-lib';
 import JSZip from 'jszip';
+import Alert from '../components/Alert';
 
 
-const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
 
 // Spinner component
 const Spinner = () => (
@@ -28,6 +28,7 @@ const SplitPDF = () => {
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [splitResultPages, setSplitResultPages] = useState<SplitResultPage[]>([]);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
 
   // useEffect(() => {
@@ -70,13 +71,19 @@ const SplitPDF = () => {
   const handleLocalFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      setIsLoading(true);
       const fileArray = Array.from(files);
+
+      // Check for non-PDF files
+      const nonPdfFiles = fileArray.filter(file => file.type !== 'application/pdf');
+      if (nonPdfFiles.length > 0) {
+        setAlertMessage('Please upload only PDF files.');
+        return;
+      }
+
       setSelectedFiles(prev => [...prev, ...fileArray]);
 
       const previews = await Promise.all(fileArray.map(file => renderPdfPages(file)));
       setPreviewPages(prev => [...prev, ...previews]);
-      setIsLoading(false);
     }
   };
 
@@ -121,29 +128,6 @@ const SplitPDF = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleMerge = async () => {
-    if (selectedFiles.length === 0 || splitMode !== 'range' || !pageRanges) {
-      alert('Please select a PDF file and a valid range first');
-      return;
-    }
-
-    const [start, end] = pageRanges.split('-').map(Number);
-    const file = selectedFiles[0];
-    const pdfData = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(pdfData);
-    const mergedPdf = await PDFDocument.create();
-
-    for (let i = start; i <= end; i++) {
-      const [copiedPage] = await mergedPdf.copyPages(pdfDoc, [i - 1]);
-      mergedPdf.addPage(copiedPage);
-    }
-
-    const mergedPdfBytes = await mergedPdf.save();
-    const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
   };
 
   // Update preview selection logic
@@ -433,6 +417,7 @@ const SplitPDF = () => {
                   </div>
               )} */}
           </div>
+          {alertMessage && <Alert message={alertMessage} type="error" onClose={() => setAlertMessage(null)} />}
       </div>
   );
 };
