@@ -72,3 +72,23 @@ export const splitPdf = async (file: File, startPage: number, endPage: number) =
   }
 };
 
+
+export const compressPdf = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("pdfFile", file);
+    formData.append("compressionLevel", "low");
+
+    const response = await axios.post(`${API_BASE_URL}/api/v1/pdfs/compress/`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error compressing PDF:", error);
+    throw error;
+  }
+};
+
+// Export API_BASE_URL
+export { API_BASE_URL };

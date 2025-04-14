@@ -305,20 +305,20 @@ const SplitPDF = () => {
               <p className='text-base md:text-lg text-gray-600 mb-6'>
                   Effortlessly split a large PDF into multiple smaller files
                   with just a few clicks.
-              </p>
+      </p>
 
-              {/* File Upload Section */}
+      {/* File Upload Section */}
               <div className='mb-6'>
                   <label className='bg-blue-600 text-white px-6 py-3 rounded-lg cursor-pointer shadow-md hover:bg-blue-700 transition inline-block'>
-                      Select PDF files
-                      <input
+          Select PDF files
+          <input
                           type='file'
                           accept='.pdf'
-                          multiple
+            multiple
                           className='hidden'
-                          onChange={handleLocalFileUpload}
-                      />
-                  </label>
+            onChange={handleLocalFileUpload}
+          />
+        </label>
               </div>
 
               {/* Preview Section */}
@@ -384,10 +384,10 @@ const SplitPDF = () => {
                                               ✓
                                           </div>
                                       )}
-                                  </div>
+        </div>
                               ))
                           )}
-                      </div>
+      </div>
                   )
               )}
 
@@ -414,14 +414,14 @@ const SplitPDF = () => {
                                   >
                                       View in New Tab
                                   </a>
-                              </li>
-                          ))}
-                      </ul>
-                  </div>
+              </li>
+            ))}
+          </ul>
+        </div>
               )} */}
-          </div>
+        </div>
           {alertMessage && <Alert message={alertMessage} type="error" onClose={() => setAlertMessage(null)} />}
-      </div>
+    </div>
   );
 };
 

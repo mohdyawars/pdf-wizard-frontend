@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
-import { FaGoogleDrive, FaDropbox } from "react-icons/fa";
-import { initializeGoogleAPIs, pickFileFromGoogleDrive } from "../utils/googleDrive";
+// import { FaGoogleDrive } from "react-icons/fa";
+import { initializeGoogleAPIs } from "../utils/googleDrive";
+import Alert from '../components/Alert';
+import { renderPdfPages } from '../utils/pdfPreview';
+import { API_BASE_URL, compressPdf } from '../api';
 
 const CompressPDF = () => {
-  const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<any[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [previewPages, setPreviewPages] = useState<string[][]>([]);
+  const [compressedPdfUrl, setCompressedPdfUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -12,7 +17,6 @@ const CompressPDF = () => {
     const loadApis = async () => {
       try {
         await initializeGoogleAPIs();
-        setIsGoogleLoaded(true);
       } catch (error) {
         console.error("Failed to load Google APIs:", error);
       }
@@ -21,101 +25,179 @@ const CompressPDF = () => {
     loadApis();
   }, []);
 
-  const handleGoogleDriveUpload = async () => {
-    if (!isGoogleLoaded) {
-      console.error("Google API not loaded");
+  const handleLocalFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+
+      // Check for non-PDF files
+      const nonPdfFiles = fileArray.filter(file => file.type !== 'application/pdf');
+      if (nonPdfFiles.length > 0) {
+        setAlertMessage('Please upload only PDF files.');
+        return;
+      }
+
+      setSelectedFiles(prev => [...prev, ...fileArray]);
+
+      const previews = await Promise.all(fileArray.map(file => renderPdfPages(file)));
+      setPreviewPages(prev => [...prev, ...previews]);
+    }
+  };
+
+  const handleCompressPDF = async () => {
+    if (selectedFiles.length === 0) {
+      alert('Please select a PDF file first');
       return;
     }
 
     setIsLoading(true);
-
     try {
-      const selectedFile = await pickFileFromGoogleDrive();
+      const file = selectedFiles[0];
+      const response = await compressPdf(file);
 
-      if (selectedFile) {
-        // Add the selected file to your list
-        setSelectedFiles(prev => [...prev, selectedFile]);
-        console.log("Selected file from Google Drive:", selectedFile);
-      }
+      // Extract the URL from the new response format
+      const url = `${API_BASE_URL}/${response.data.url}`;
+      setCompressedPdfUrl(url);
     } catch (error) {
-      console.error("Google Drive file selection failed:", error);
+      console.error('Error compressing PDF:', error);
+      alert('Failed to compress PDF. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleLocalFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const fileArray = Array.from(files);
-      setSelectedFiles(prev => [...prev, ...fileArray]);
-    }
-  };
-
   return (
-    <div className="max-w-3xl mx-auto text-center mt-10 p-6">
-      <h1 className="text-4xl text-center font-bold">Compress PDF files</h1>
-      <p className="text-lg text-gray-600 mt-4">
-        Effortlessly reduce the size of your PDF files while maintaining quality with just a few clicks.
-      </p>
+      <div className='flex flex-col md:flex-row min-h-screen'>
+          <div className='w-full md:w-1/4 bg-gray-100 p-4 md:p-6 border-b md:border-b-0 md:border-r'>
+              <h2 className='text-lg md:text-xl font-semibold mb-4'>
+                  Compress Options
+              </h2>
 
-      {/* File Upload Section */}
-      <div className="mt-6 flex flex-col items-center space-y-4">
-        {/* Upload Button */}
-        <label className="bg-blue-600 text-white px-6 py-3 rounded-lg cursor-pointer shadow-md hover:bg-blue-700 transition">
-          Select PDF files
-          <input
-            type="file"
-            accept=".pdf"
-            multiple
-            className="hidden"
-            onChange={handleLocalFileUpload}
-          />
-        </label>
+              {/* Compression Level Selection */}
+              <div className='mb-6'>
+                  <label className='block text-sm font-medium mb-2'>
+                      Compression Level
+                  </label>
+                  <div className='flex space-x-4'>
+                      <label className='flex items-center'>
+                          <input
+                              type='radio'
+                              name='compressionLevel'
+                              value='low'
+                              className='form-radio'
+                          />
+                          <span className='ml-2'>Low</span>
+                      </label>
+                      <label className='flex items-center'>
+                          <input
+                              type='radio'
+                              name='compressionLevel'
+                              value='medium'
+                              className='form-radio'
+                          />
+                          <span className='ml-2'>Medium</span>
+                      </label>
+                      <label className='flex items-center'>
+                          <input
+                              type='radio'
+                              name='compressionLevel'
+                              value='high'
+                              className='form-radio'
+                          />
+                          <span className='ml-2'>High</span>
+                      </label>
+                  </div>
+              </div>
 
-        {/* Google Drive and Dropbox icons */}
-        <div className="flex space-x-6">
-          <button
-            onClick={handleGoogleDriveUpload}
-            disabled={!isGoogleLoaded || isLoading}
-            className={`text-gray-600 hover:text-gray-900 transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <FaGoogleDrive className="text-4xl" />
-          </button>
-        </div>
+              {/* Google Drive Upload
+              <button
+                  onClick={handleGoogleDriveUpload}
+                  disabled={!isGoogleLoaded || isLoading}
+                  className={`text-gray-600 hover:text-gray-900 transition ${
+                      isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+              >
+                  <FaGoogleDrive className='text-4xl' />
+              </button> */}
+
+              {/* Compress Button */}
+              {selectedFiles.length > 0 && (
+                  <button
+                      onClick={handleCompressPDF}
+                      disabled={isLoading}
+                      className={`w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 mt-4 ${
+                          isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                  >
+                      {isLoading ? 'Compressing...' : 'Compress PDF'}
+                  </button>
+              )}
+
+              {/* Download button for compressed PDF */}
+              {compressedPdfUrl && (
+                  <button
+                      onClick={() => {
+                          const a = document.createElement('a');
+                          a.href = compressedPdfUrl;
+                          a.download = 'compressed.pdf';
+                          a.click();
+                          URL.revokeObjectURL(compressedPdfUrl);
+                      }}
+                      className='w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 mt-4'
+                  >
+                      Download Compressed PDF
+                  </button>
+              )}
+          </div>
+
+          <div className='flex-1 p-4 md:p-6 overflow-auto'>
+              <h1 className='text-2xl md:text-4xl font-bold mb-4'>
+                  Compress PDF files
+              </h1>
+              <p className='text-base md:text-lg text-gray-600 mb-6'>
+                  Effortlessly reduce the size of your PDF files while
+                  maintaining quality with just a few clicks.
+              </p>
+
+              {/* File Upload Section */}
+              <div className='mb-6'>
+                  <label className='bg-blue-600 text-white px-6 py-3 rounded-lg cursor-pointer shadow-md hover:bg-blue-700 transition inline-block'>
+                      Select PDF files
+                      <input
+                          type='file'
+                          accept='.pdf'
+                          multiple
+                          className='hidden'
+                          onChange={handleLocalFileUpload}
+                      />
+                  </label>
+              </div>
+
+
+              {/* Preview Section */}
+              {previewPages.length > 0 && (
+                  <div className='relative border rounded p-2'>
+                      <img
+                          src={previewPages[0][0]}
+                          alt='Page 1'
+                          className='w-full h-52 object-contain'
+                      />
+                      <div className='absolute inset-0 bg-black bg-opacity-50 text-white flex flex-col justify-center items-center opacity-0 hover:opacity-100 transition-opacity'>
+                          <p>Size: {(selectedFiles[0].size / 1024).toFixed(2)} KB</p>
+                          <p>Pages: {previewPages[0].length}</p>
+                      </div>
+                  </div>
+              )}
+          </div>
+
+          {alertMessage && (
+              <Alert
+                  message={alertMessage}
+                  type='error'
+                  onClose={() => setAlertMessage(null)}
+              />
+          )}
       </div>
-
-      {/* Selected Files List */}
-      {selectedFiles.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold">Selected Files ({selectedFiles.length})</h2>
-          <ul className="mt-2 text-left">
-            {selectedFiles.map((file, index) => (
-              <li key={index} className="border p-2 rounded my-1 flex justify-between">
-                <span>{file.name}</span>
-                <button
-                  onClick={() => setSelectedFiles(files => files.filter((_, i) => i !== index))}
-                  className="text-red-500"
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          {/* Compress Button */}
-          <button className="mt-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition">
-            Compress PDFs
-          </button>
-        </div>
-      )}
-
-      {isLoading && (
-        <div className="mt-4">
-          <p>Loading...</p>
-        </div>
-      )}
-    </div>
   );
 };
 
