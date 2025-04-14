@@ -135,18 +135,14 @@ const CompressPDF = () => {
 
               {/* Download button for compressed PDF */}
               {compressedPdfUrl && (
-                  <button
-                      onClick={() => {
-                          const a = document.createElement('a');
-                          a.href = compressedPdfUrl;
-                          a.download = 'compressed.pdf';
-                          a.click();
-                          URL.revokeObjectURL(compressedPdfUrl);
-                      }}
-                      className='w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 mt-4'
+                  <a
+                      href={compressedPdfUrl}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 mt-4 block text-center'
                   >
                       Download Compressed PDF
-                  </button>
+                  </a>
               )}
           </div>
 
