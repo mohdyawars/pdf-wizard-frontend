@@ -4,6 +4,11 @@ import { initializeGoogleAPIs } from "../utils/googleDrive";
 import Alert from '../components/Alert';
 import { renderPdfPages } from '../utils/pdfPreview';
 import { API_BASE_URL, compressPdf } from '../api';
+// import { FaGoogleDrive } from "react-icons/fa";
+import { initializeGoogleAPIs } from "../utils/googleDrive";
+import Alert from '../components/Alert';
+import { renderPdfPages } from '../utils/pdfPreview';
+import { API_BASE_URL, compressPdf } from '../api';
 
 const CompressPDF = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -25,6 +30,28 @@ const CompressPDF = () => {
     loadApis();
   }, []);
 
+  const handleLocalFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+
+      // Check for non-PDF files
+      const nonPdfFiles = fileArray.filter(file => file.type !== 'application/pdf');
+      if (nonPdfFiles.length > 0) {
+        setAlertMessage('Please upload only PDF files.');
+        return;
+      }
+
+      setSelectedFiles(prev => [...prev, ...fileArray]);
+
+      const previews = await Promise.all(fileArray.map(file => renderPdfPages(file)));
+      setPreviewPages(prev => [...prev, ...previews]);
+    }
+  };
+
+  const handleCompressPDF = async () => {
+    if (selectedFiles.length === 0) {
+      alert('Please select a PDF file first');
   const handleLocalFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
@@ -135,18 +162,14 @@ const CompressPDF = () => {
 
               {/* Download button for compressed PDF */}
               {compressedPdfUrl && (
-                  <button
-                      onClick={() => {
-                          const a = document.createElement('a');
-                          a.href = compressedPdfUrl;
-                          a.download = 'compressed.pdf';
-                          a.click();
-                          URL.revokeObjectURL(compressedPdfUrl);
-                      }}
-                      className='w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 mt-4'
+                  <a
+                      href={compressedPdfUrl}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 mt-4 block text-center'
                   >
                       Download Compressed PDF
-                  </button>
+                  </a>
               )}
           </div>
 
