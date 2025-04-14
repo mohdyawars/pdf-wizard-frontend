@@ -5,10 +5,7 @@ import Alert from '../components/Alert';
 import { renderPdfPages } from '../utils/pdfPreview';
 import { API_BASE_URL, compressPdf } from '../api';
 // import { FaGoogleDrive } from "react-icons/fa";
-import { initializeGoogleAPIs } from "../utils/googleDrive";
-import Alert from '../components/Alert';
-import { renderPdfPages } from '../utils/pdfPreview';
-import { API_BASE_URL, compressPdf } from '../api';
+
 
 const CompressPDF = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
