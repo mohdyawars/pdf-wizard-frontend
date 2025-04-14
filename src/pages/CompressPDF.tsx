@@ -49,28 +49,6 @@ const CompressPDF = () => {
   const handleCompressPDF = async () => {
     if (selectedFiles.length === 0) {
       alert('Please select a PDF file first');
-  const handleLocalFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const fileArray = Array.from(files);
-
-      // Check for non-PDF files
-      const nonPdfFiles = fileArray.filter(file => file.type !== 'application/pdf');
-      if (nonPdfFiles.length > 0) {
-        setAlertMessage('Please upload only PDF files.');
-        return;
-      }
-
-      setSelectedFiles(prev => [...prev, ...fileArray]);
-
-      const previews = await Promise.all(fileArray.map(file => renderPdfPages(file)));
-      setPreviewPages(prev => [...prev, ...previews]);
-    }
-  };
-
-  const handleCompressPDF = async () => {
-    if (selectedFiles.length === 0) {
-      alert('Please select a PDF file first');
       return;
     }
 
